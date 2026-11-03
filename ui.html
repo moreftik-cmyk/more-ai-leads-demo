@@ -61,6 +61,7 @@ if(systemsInput){
   const systemsField=systemsInput.closest('.field');
   systemsField.querySelector('label').textContent='באילו מערכות וכלים אתם משתמשים כיום?';
   systemsInput.placeholder='כתבו כאן את המערכות והכלים שלכם';
+  systemsField.querySelectorAll('.recording-help').forEach(item=>item.remove());
   if(!systemsField.querySelector('.field-help')) systemsInput.insertAdjacentHTML('afterend','<small class="field-help">למשל: מערכת ניהול או CRM, הנהלת חשבונות, יומן, סליקה ותשלומים, שיווק ועוד.</small>');
   const oldChannel=systemsField.parentElement.querySelector('select[name="main_channel"]')?.closest('.field');
   if(oldChannel) oldChannel.remove();
