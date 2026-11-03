@@ -49,4 +49,37 @@ document.querySelectorAll('[data-next]').forEach(btn=>btn.onclick=()=>{const cur
 function resetRecording(){if(recording.recorder?.state==='recording')stopRecording();recording.blob=null;recording.chunks=[];if(recordAudio){recordAudio.removeAttribute('src');recordAudio.classList.add('hide')}if(recordTimer)recordTimer.textContent='00:00 / 02:00'}
 document.addEventListener('click',e=>{if(e.target.closest('#openIntake,#headIntake'))resetRecording()});document.querySelector('#closeModal')?.addEventListener('click',resetRecording);
 const form=document.querySelector('#intakeForm');if(form)form.onsubmit=e=>{e.preventDefault();const storyText=story?.value.trim();if(!storyText&&!recording.blob){notify('יש לכתוב תשובה או להקליט תשובה קולית');return}const f=new FormData(form);MorAI.addLead({name:f.get('contact'),business:f.get('business'),need:'נוספה דרך טופס הדמו',systems:`${f.get('main_channel')} · ${f.get('systems')}`,contact:f.get('contact')});closeModal();MorAI.state.view='overview';notify('הפנייה נוספה לדשבורד — נתוני דמו בלבד');render()};
+</script>
+<style>
+.field-help{display:block;color:var(--muted);font-size:12px;line-height:1.5;margin-top:6px}
+.thank-you{text-align:center;padding:34px 12px 18px}.thank-you-mark{width:58px;height:58px;border-radius:18px;background:var(--grad);color:#fff;display:grid;place-items:center;margin:0 auto 18px;font-size:28px}.thank-you h3{font:800 25px Rubik;margin:0 0 12px}.thank-you p{color:var(--muted);font-size:16px;line-height:1.7;margin:0 auto;max-width:470px}.thank-you strong{color:var(--ink)}.thank-you .primary{margin-top:24px}
+</style>
+<script>
+// Final intake refinements: multi-select work channel, separate contact fields and visible confirmation.
+const systemsInput=document.querySelector('input[name="systems"]');
+if(systemsInput){
+  const systemsField=systemsInput.closest('.field');
+  systemsField.querySelector('label').textContent='באילו מערכות וכלים אתם משתמשים כיום?';
+  systemsInput.placeholder='כתבו כאן את המערכות והכלים שלכם';
+  if(!systemsField.querySelector('.field-help')) systemsInput.insertAdjacentHTML('afterend','<small class="field-help">למשל: מערכת ניהול או CRM, הנהלת חשבונות, יומן, סליקה ותשלומים, שיווק ועוד.</small>');
+  const oldChannel=systemsField.parentElement.querySelector('select[name="main_channel"]')?.closest('.field');
+  if(oldChannel) oldChannel.remove();
+  systemsField.insertAdjacentHTML('afterend','<div class="field"><label>איפה מתנהלת רוב העבודה שלכם?</label><div class="choice-grid"><label class="choice"><input type="checkbox" name="main_channel" value="WhatsApp">WhatsApp</label><label class="choice"><input type="checkbox" name="main_channel" value="דוא״ל">דוא״ל</label><label class="choice"><input type="checkbox" name="main_channel" value="מערכת CRM או מערכת ניהול">מערכת CRM או מערכת ניהול</label><label class="choice"><input type="checkbox" name="main_channel" value="Excel או Google Sheets">Excel או Google Sheets</label><label class="choice"><input type="checkbox" name="main_channel" value="כמה מערכות במקביל">כמה מערכות במקביל</label><label class="choice"><input type="checkbox" name="main_channel" value="אין מקום מרכזי שבו המידע מרוכז">אין מקום מרכזי שבו המידע מרוכז</label><label class="choice"><input type="checkbox" name="main_channel" value="אחר">אחר</label></div></div>');
+}
+const oldContact=document.querySelector('input[name="contact"]');
+if(oldContact){
+  oldContact.required=false;oldContact.classList.add('hide');
+  oldContact.closest('.field').insertAdjacentHTML('beforeend','<input name="full_name" placeholder="שם מלא" required><input name="phone" type="tel" placeholder="טלפון" required style="margin-top:8px">');
+}
+const intakeForm=document.querySelector('#intakeForm'),thankYou=document.createElement('section');
+thankYou.id='thankYou';thankYou.className='thank-you hide';thankYou.innerHTML='<div class="thank-you-mark">✓</div><h3>תודה — הפרטים התקבלו בהצלחה</h3><p>תודה ששיתפתם אותנו בפרטי העסק ובתהליכים החשובים לכם.<br>נעבור על התשובות שלכם ונחזור אליכם בהקדם עם <strong>דמו קצר ומותאם אישית</strong> — אולי זה יהיה הצעד הראשון לשינוי העסק שלכם מהקצה לקצה.</p><button class="primary" type="button" id="thankYouClose">סיום</button>';
+intakeForm?.after(thankYou);
+const originalOpenModal=openModal,originalCloseModal=closeModal;
+openModal=()=>{originalOpenModal();intakeForm?.classList.remove('hide');thankYou.classList.add('hide');document.querySelector('.steps')?.classList.remove('hide');};
+closeModal=()=>{thankYou.classList.add('hide');intakeForm?.classList.remove('hide');document.querySelector('.steps')?.classList.remove('hide');originalCloseModal();};
+document.querySelector('#thankYouClose')?.addEventListener('click',closeModal);
+document.querySelectorAll('#openIntake,#headIntake').forEach(button=>button.onclick=openModal);
+document.querySelector('#closeModal').onclick=closeModal;
+validateStep=n=>{if(n===1)return document.querySelector('[data-step="1"] input[name="business"]').reportValidity()&&document.querySelector('[data-step="1"] select[name="size"]').reportValidity();if(n===2){const checked=document.querySelector('[data-step="2"] input[name="needs"]:checked');const systems=document.querySelector('[data-step="2"] input[name="systems"]');const channels=document.querySelectorAll('[data-step="2"] input[name="main_channel"]:checked');if(!checked){notify('יש לבחור לפחות משימה אחת');return false}if(!systems.value.trim()){systems.setCustomValidity('נא לציין באילו מערכות משתמשים כיום');systems.reportValidity();systems.setCustomValidity('');return false}if(!channels.length){notify('יש לבחור לפחות דרך התנהלות אחת');return false}return true}return true};
+if(intakeForm) intakeForm.onsubmit=e=>{e.preventDefault();const storyText=story?.value.trim();if(!storyText&&!recording.blob){notify('יש לכתוב תשובה או להקליט תשובה קולית');return}if(!document.querySelector('[name="full_name"]').reportValidity()||!document.querySelector('[name="phone"]').reportValidity())return;const channels=[...document.querySelectorAll('[name="main_channel"]:checked')].map(x=>x.value);if(!channels.length){notify('יש לבחור לפחות דרך התנהלות אחת');return}const f=new FormData(intakeForm);MorAI.addLead({name:f.get('full_name'),business:f.get('business'),need:'נוספה דרך טופס הדמו',systems:`${channels.join(', ')} · ${f.get('systems')}`,contact:`${f.get('full_name')} · ${f.get('phone')}`});intakeForm.classList.add('hide');document.querySelector('.steps')?.classList.add('hide');thankYou.classList.remove('hide');};
 </script></body></html>
