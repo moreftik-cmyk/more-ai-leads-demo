@@ -3,6 +3,7 @@ const MorAI = (() => {
     view: 'overview',
     query: '',
     selectedId: null,
+    portal: 'מור AI',
     leads: [
       { id: 1, name: 'רונית לוי', business: 'סטודיו פילאטיס', status: 'new', priority: 'גבוהה', need: 'מעקב אחרי מתעניינות ותיאום שיעורים', received: 'היום, 09:42', contact: '050-1234567', systems: 'WhatsApp, Google Sheets' },
       { id: 2, name: 'אורי כהן', business: 'שירותי אחזקה', status: 'work', priority: 'בינונית', need: 'הצעות מחיר, תיאום צוות ומעקב לקוחות', received: 'אתמול, 16:20', contact: '052-9876543', systems: 'WhatsApp, Excel' },
