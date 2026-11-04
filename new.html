@@ -122,5 +122,5 @@ validateStep=n=>{if(n===1){const type=document.querySelector('[data-step="1"] in
 const originalSubmitHandler=intakeForm?.onsubmit;
 document.addEventListener('submit',event=>{if(event.target===intakeForm){const business=intakeForm.querySelector('[name="business"]'),type=intakeForm.querySelector('[name="business_type"]');if(business&&type&&type.value.trim())business.value=`${business.value.trim()} · ${type.value.trim()}`}},true);
 if(intakeForm) intakeForm.addEventListener('submit',()=>{const f=new FormData(intakeForm);if(f.get('business_type')) intakeForm.dataset.businessType=f.get('business_type')});
-if(location.pathname.endsWith('/index.html') || location.pathname.endsWith('/')) setTimeout(openModal,120);
+if(location.pathname.endsWith('/index.html') || location.pathname.endsWith('/') || location.pathname.endsWith('/new.html')) setTimeout(openModal,120);
 </script></body></html>
