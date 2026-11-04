@@ -82,6 +82,14 @@ const form=document.querySelector('#intakeForm');if(form)form.onsubmit=e=>{e.pre
 </style>
 <script>
 // Final intake refinements: multi-select work channel, separate contact fields and visible confirmation.
+const businessInput=document.querySelector('input[name="business"]');
+if(businessInput && !document.querySelector('input[name="business_type"]')){
+  const typeField=document.createElement('div');
+  typeField.className='field';
+  typeField.innerHTML='<label>סוג העסק</label><input name="business_type" placeholder="למשל: סטודיו, קליניקה, משרד או חנות" required>';
+  businessInput.closest('.field')?.after(typeField);
+  businessInput.closest('.field')?.querySelector('label').textContent='שם העסק';
+}
 const systemsInput=document.querySelector('input[name="systems"]');
 if(systemsInput){
   const systemsField=systemsInput.closest('.field');
@@ -109,4 +117,9 @@ document.querySelectorAll('#openIntake,#headIntake').forEach(button=>button.oncl
 document.querySelector('#closeModal').onclick=closeModal;
 validateStep=n=>{if(n===1)return document.querySelector('[data-step="1"] input[name="business"]').reportValidity()&&document.querySelector('[data-step="1"] select[name="size"]').reportValidity();if(n===2){const checked=document.querySelector('[data-step="2"] input[name="needs"]:checked');const systems=document.querySelector('[data-step="2"] input[name="systems"]');const channels=document.querySelectorAll('[data-step="2"] input[name="main_channel"]:checked');if(!checked){notify('יש לבחור לפחות משימה אחת');return false}if(!systems.value.trim()){systems.setCustomValidity('נא לציין באילו מערכות משתמשים כיום');systems.reportValidity();systems.setCustomValidity('');return false}if(!channels.length){notify('יש לבחור לפחות דרך התנהלות אחת');return false}return true}return true};
 if(intakeForm) intakeForm.onsubmit=e=>{e.preventDefault();const storyText=story?.value.trim();if(!storyText&&!recording.blob){notify('יש לכתוב תשובה או להקליט תשובה קולית');return}if(!document.querySelector('[name="full_name"]').reportValidity()||!document.querySelector('[name="phone"]').reportValidity())return;const channels=[...document.querySelectorAll('[name="main_channel"]:checked')].map(x=>x.value);if(!channels.length){notify('יש לבחור לפחות דרך התנהלות אחת');return}const f=new FormData(intakeForm);MorAI.addLead({name:f.get('full_name'),business:f.get('business'),need:'נוספה דרך טופס הדמו',systems:`${channels.join(', ')} · ${f.get('systems')}`,contact:`${f.get('full_name')} · ${f.get('phone')}`});intakeForm.classList.add('hide');document.querySelector('.steps')?.classList.add('hide');thankYou.classList.remove('hide');};
+const previousValidateStep=validateStep;
+validateStep=n=>{if(n===1){const type=document.querySelector('[data-step="1"] input[name="business_type"]');if(!type?.reportValidity())return false}return previousValidateStep(n)};
+const originalSubmitHandler=intakeForm?.onsubmit;
+if(intakeForm) intakeForm.addEventListener('submit',()=>{const f=new FormData(intakeForm);if(f.get('business_type')) intakeForm.dataset.businessType=f.get('business_type')});
+if(location.pathname.endsWith('/index.html') || location.pathname.endsWith('/')) setTimeout(openModal,120);
 </script></body></html>
